@@ -1,0 +1,102 @@
+---
+title: "EWAS ATLAS"
+author: "Asta Kvedaraitė"
+date: "11/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r, echo=FALSE}
+if(!require("taRifx"))install.packages("taRifx")
+library("taRifx")
+asc <- read.delim("ewas/EWAS_Atlas_associations.tsv", sep = "\t", header = TRUE)
+asc <- remove.factors(asc)
+
+studies <- read.delim("ewas/EWAS_Atlas_studies.tsv", sep = '\t', header = TRUE)
+studies <- remove.factors(studies)
+
+coh <- read.delim("ewas/EWAS_Atlas_cohorts.tsv", sep = "\t", header = TRUE)
+coh <- remove.factors(coh)
+
+anno <- read.delim("ewas/EWAS_Atlas_probe_annotations.tsv", sep = "\t", header = TRUE)
+anno <- remove.factors(anno)
+
+#length(studies$Study.id)
+```
+
+1. pasilikti tik asc, kita info prideti su study.id. 
+2. studies : info: trait ir pmid
+3. cohorts : prideti platform, sample size, tissue,
+4. asc: ismesti kelias platformas, kad tik  naudojama. sample size sudeti, tissue, ismesti study id kai daugiau nei 1 tissue 
+
+```{r,echo = FALSE}
+#anno neliečiamas
+#study,
+#data <- cohorts
+removeMoreThanOne <- function(data){
+  studId <- unique(data$Study.id)
+  newM <- matrix(nrow = length(studId), ncol = ncol(data))
+  colnames(newM) <- colnames(data)
+  #newM
+  for (id in 1:length(studId)){
+    temp <- data[data$Study.id == studId[id],]
+    platform = NA
+    sum = NA
+    #imu tik tuos, kurie neturi skirtingų audinių ir neturi skirtingų platformų
+    if (length(temp$Tissue) == 1  & length(temp$Platform) == 1){
+      if (temp$Platform[1] == "450K" || temp$Platform[1] == "850K"){
+        platform = temp$Platform[1]
+        #gaunu sample sumą
+        sum = sum(temp$Sample.size)
+      }
+    }
+    newM[id,] <- c(temp$Study.id[1],platform, sum, temp$Tissue[1], temp$Ancestry[1])
+  } 
+  return(newM)
+}
+
+
+cohorts<- coh[,c(2,4,5,11,15)]
+#coh
+#cohorts[935,]
+length(unique(cohorts$Study.id))
+c <- data.frame(removeMoreThanOne(cohorts))
+#C- visi studId, kurie neturi skirtingų audinių ir platformų
+cohorts <- c[!is.na(c$Platform),]
+
+
+```
+
+```{r, echo=FALSE}
+
+stud <- studies[,c(1,2,6)]
+main <- remove.factors(merge(stud, cohorts, by= "Study.id"))
+unique(main$Platform)
+main[main$Platform == "850K",]
+
+asc2 <- asc[, c(1,7,8,10)]
+#asc
+asc2$P.value <- as.numeric(asc2$P.value)
+asc2
+
+joined <- remove.factors(merge(main, asc2, by = "Study.id"))
+
+```
+
+```{r, echo=FALSE}
+
+write.csv(joined, "asc_stud_coh.csv", append = FALSE, sep = "\t")
+
+```
+
+```{r, echo=FALSE}
+rm(list= ls())
+
+```
+
+

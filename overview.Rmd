@@ -1,0 +1,130 @@
+---
+title: "Failuperziura"
+author: "Asta Kvedaraitė"
+date: "11/12/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Read from files.
+```{r, echo=FALSE}
+if(!require("taRifx"))install.packages("taRifx")
+library("taRifx")
+
+anno <- read.delim("ewas/EWAS_Atlas_associations.tsv", sep = "\t", header = TRUE)
+anno <- remove.factors(anno)
+
+data <- read.csv("asc_stud_coh.csv", header = TRUE)
+data <- remove.factors(data)
+```
+
+
+```{r, echo=FALSE}
+anno
+```
+
+
+```{r, echo=FALSE}
+data
+```
+```{r}
+length(data$Platform == "450K")
+length(unique(data$Study.id[data$Platform == "850K"]))
+
+
+```
+
+```{r, echo=FALSE}
+#unique(data$Tissue)
+data[!grepl("cg\\d{8}", data$Probe.id),]
+check <- data[grepl("cg\\d{8}", data$Probe.id),]
+dim(data)
+dim(check)
+
+#check$Probe.id[check$Trait == unique(check$Trait[1])]
+
+if(!require("tidyr"))install.packages("tidyr")
+library("tidyr")
+
+makeMat <-function(rowNum, row,col){
+  mat <- matrix(nrow = length(unique(row)), ncol = length(unique(col)),
+              dimnames = list(unique(row),  unique(col)))
+
+  for (i in 1:rowNum){
+    row1 <- row[i]
+    col1 <- col[i]
+    mat[row1,col1] <- TRUE
+  }
+  mat<- replace_na(mat, FALSE)
+  return(mat)
+}
+
+
+#mat[1:10,1:5]
+#sum(mat[,4])
+#dim(data)
+
+cg_trait <- makeMat(nrow(check), check$Probe.id, check$Trait)
+as.data.frame(cg_trait)
+```
+
+
+```{r, echo=FALSE}
+
+
+cg_study <- makeMat(nrow(check), check$Probe.id, check$Study.id)
+as.data.frame(cg_study)
+
+
+```
+
+
+```{r, echo=FALSE}
+#ir study ID
+#atstumus tarp visu poru study.id
+#kiek poziciju persidengia / kiek daugiausia gali persidengt (max persidengusio) 1 5, 1 3 
+#intersection ABC , CDE -> C 1
+#union ABC, CDE -> ABCDE -> 5  #probe.id
+#atstumas 1/5
+# CDF, CDF ->
+#intersection -> CDF 3
+#unuin -> CDF 3
+#kuo daugiau 
+
+
+#   BMI ...
+#BMI
+#.
+#.
+sum(cg_trait[,1] & cg_trait[,2])/sum(cg_trait[,1] | cg_trait[,2])
+#kurie panasiausi
+
+#ieskoti grupiu, grafa, tarp tu paciu ligu
+# po mat -> grafikai
+#pasiruosimas
+#2 atstumas tarp ligu
+#su grafikais : tinka, ar study.id rodo panasuma su panasiais ar skirtingais
+# 1 study id kaip virsune (cg)
+```
+
+#traitrs
+```{r, echo=FALSE}
+
+length(unique(data$Study.id[data$Sample.size > 100]))
+
+unique(check$Sample.size)
+#check$P.value <- p.adjust(check$P.value)
+as.data.frame(check[check$P.value < 1E-5,])
+
+p.adjust(check$P.value[1]) < p.adjust(check$P.value[2])
+check$P.value[1] < check$P.value[2]
+```
+```{r, echo = FALSE}
+
+
+```
+
+
