@@ -124,7 +124,6 @@ check$P.value[1] < check$P.value[2]
 ```
 ```{r, echo = FALSE}
 
-
 ```
 
 
