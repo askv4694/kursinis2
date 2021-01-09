@@ -10,7 +10,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-
 ```{r, echo=FALSE}
 if(!require("taRifx"))install.packages("taRifx")
 library("taRifx")
@@ -48,7 +47,7 @@ removeMoreThanOne <- function(data){
     platform = NA
     sum = NA
     #imu tik tuos, kurie neturi skirtingų audinių ir neturi skirtingų platformų
-    if (length(temp$Tissue) == 1  & length(temp$Platform) == 1){
+    if (length(unique(temp$Tissue)) == 1  & length(unique(temp$Platform)) == 1){
       if (temp$Platform[1] == "450K" || temp$Platform[1] == "850K"){
         platform = temp$Platform[1]
         #gaunu sample sumą

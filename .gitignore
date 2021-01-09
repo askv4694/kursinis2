@@ -3,3 +3,5 @@
 .Rhistory
 asc_stud_coh.csv
 *.tsv
+TF_cg_study.rds
+TF_cg_trait.rds

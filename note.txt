@@ -1,0 +1,57 @@
+#Dėl savęs pasirašau eigą, kokie žingsniai vykdomi Rmd failuose
+####################
+File: joinData.Rmd
+====================
+Eiga:
+1. Nuskaitymas
+2. Pašalinamos eilutės, turinčios >1 unikalų audinių tipą 
+	ir >1 platformos tipą. Naudojamas failas Cohorts
+	Generuojama nauja matrica iš study.id, study.id bendros sample sumos
+		audinio tipas, ancestry
+	Pašalinamos eilutės turinčios NA reikšmę platformoje
+3. Sujungiami (merge) failai pagal "Study.id" 
+	(nauja matrica iš cohorts, studies, association)
+4. Sujungta matrica rašomą į failą .csv
+	toliau vadinsiu data
+
+====================
+File : overview.Rmd
+====================
+eiga:
+1. Nuskaitymas
+2. data faile yra neteisingai įrašytų probe.id, su grepl pasilieku tik tas
+	eilutes, kurios turi teisingas proble.id(cg_8skaičiai). (pašalina ~300)
+3. Nauja matrica, kurią sudaro True/False, rows yra probe.id o cols - trait
+	Išrenkamos unikalios reikšmės, ieškoma ar cg_ turi trait
+	probe.id/traits BMI		smoke ..
+	cg_21345678 	TRUE 	FALSE ..
+	cg_21345678		TRUE 	TRUE ..
+	..
+
+	probe.id ilgis == trait ilgis
+	~10 min užtrunka
+	cg_study, cg_trait
+
+
+
+5. Generuojama atstumų matrica: pagal kažkurį požymį : trait:
+	col ir rows yra trait, ieškoma suma 
+	i yra row, o j pastoviai keičias, trait su kitais trait
+		sum(trait[,i] & trait[,j]) / sum( trait[,i] | trait[,j])
+	Naudojama funkcija getDistance(matrix, rownames, colnames)
+	galima generuoti 1 ar daugiau trait su 1 ar daugiau kitų trait
+	(pats su savim nedaro, nebent rownames ir colnames turi tą patį name)
+
+~4. Pasidaryti lentelę, kur tikrina ar nėra duplikuotų eilučių (tokių radau)
+	Juos pašalinti
+	Kadangi cg yra unikalus, galima suskaičiuoti kiekvieno study.id kiekį -
+	rasti kiek kiekvienas study.id turi cg. tada atmesti visus study.id,
+	kurie turi mažiau sum(cg) nei vidurkis.
+
+	Galima ir cg-trait taip pat.
+
+	rasti kiek kiekvienas trait turi probe.id, nes cg_ unikalus.
+	names1 <- < 500 trait sum(cg_)
+	name2 <- > 500 trait
+	5-ame naudoti name2
+
