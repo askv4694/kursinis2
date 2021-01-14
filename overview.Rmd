@@ -17,6 +17,10 @@ library("taRifx")
 anno <- read.delim("ewas/EWAS_Atlas_probe_annotations.tsv", sep = "\t", header = TRUE)
 anno <- remove.factors(anno)
 
+```
+
+```{r, echo = FALSE}
+
 data <- read.csv("asc_stud_coh.csv", header = TRUE)
 data <- remove.factors(data)
 ```
@@ -30,6 +34,7 @@ anno
 ```{r, echo=FALSE}
 data
 ```
+
 ```{r}
 length(data$Platform == "450K")
 length(unique(data$Study.id[data$Platform == "850K"]))
@@ -43,7 +48,144 @@ length(unique(data$Study.id[data$Platform == "850K"]))
 check <- data[grepl("cg\\d{8}", data$Probe.id),]
 dim(data)
 dim(check)
+length(unique(check$Probe.id)) 
 ```
+
+
+```{r, echo=FALSE}
+#check$Probe.id[check$Trait == unique(check$Trait[1])]
+if(!require("tidyr"))install.packages("tidyr")
+library("tidyr")
+
+makeMat <-function(rowNum, row ,col){
+  mat <- matrix(nrow = length(unique(row)), ncol = length(unique(col)),
+              dimnames = list(unique(row),  unique(col)))
+
+  for (i in 1:rowNum){
+    if(i %% 100 == 0){
+      cat('\r', i)
+      flush.console()
+    }
+    row1 <- row[i]
+    col1 <- col[i]
+    mat[row1,col1] <- TRUE
+  }
+  mat<- replace_na(mat, FALSE)
+  return(mat)
+}
+
+
+#mat[1:10,1:5]
+#sum(mat[,4])
+#dim(data)
+
+#cg_trait <- makeMat(nrow(check2), check$Probe.id, check$Trait)
+#as.data.frame(cg_trait)
+#saveRDS(cg_trait, file= "TF_cg_trait.rds")
+```
+
+
+```{r, echo=FALSE}
+
+
+cg_study <- makeMat(nrow(check), check$Probe.id, check$Study.id)
+as.data.frame(cg_study)
+#saveRDS(cg_study, file= "TF_cg_study.rds")
+#dim(TF_cg_study)
+```
+
+
+```{r, echo=FALSE}
+#ir study ID
+#atstumus tarp visu poru study.id
+#kiek poziciju persidengia / kiek daugiausia gali persidengt (max persidengusio) 1 5, 1 3 
+#intersection ABC , CDE -> C 1
+#union ABC, CDE -> ABCDE -> 5  #probe.id
+#atstumas 1/5
+# CDF, CDF -> CDF
+#intersection -> CDF 3
+#unuin -> CDF 3
+#kuo daugiau 
+
+#   BMI ...
+#BMI
+#.
+#.
+getDistance <- function(matrix, rownames,colnames){
+  mat <- matrix(nrow = length(rownames), ncol = length(colnames),
+              dimnames = list(rownames,colnames))
+  cat("create new matrix..",'\n')
+  #c1 = 0
+  for(i in rownames){ #row
+    #c1=c1+1
+    #c2 = c1
+    for(j in colnames){ #every col
+      #c2 = c2+1
+      mat[i,j] <- sum(matrix[,i] & matrix[,j])/sum(matrix[,i] | matrix[,j])
+      #mat[i,j] <- fisher.test(tab)
+      #cat('\r', c1, ' ', c2)
+      #flush.console() 
+      
+    }
+  }
+  return(mat)
+} 
+
+#sum(cg_study[,1] & cg_study[,2])/sum(cg_study[,1] | cg_study[,2])
+#sum(cg_trait[,1] & cg_trait[,2])/sum(cg_trait[,1] | cg_trait[,2])
+#kurie panasiausi
+#length(names)
+names <- colnames(TF_cg_study)
+length(names)
+# visų duomenų neleidžiu, nes užtruks ~ 4valandas , nebent vėliau
+# paduodu matricą, rownames( kuris bus pagrindinis tikrinamasis) ir colnames kuris bus kintamasis(tas antras tikrinamasis)
+study_dist <- getDistance(TF_cg_study, names, names)
+data.frame(study_dist)
+saveRDS(study_dist)
+
+```
+
+if (sum(matrix[,i] & matrix[,j]) == 0 | sum(matrix[,i] | matrix[,j]) == "NaN"){
+        cat('===== check==', i, ' ', j, '\n')
+        cat(sum(matrix[,i] & matrix[,j]) , '  ', sum(matrix[,i] | matrix[,j]) , '\n') 
+        cat(sum(matrix[,i] & matrix[,j]) / sum(matrix[,i] | matrix[,j]) , '\n') 
+      }
+      if(sum(matrix[,i] & matrix[,j]) == 0 | sum(matrix[,i] | matrix[,j]) == 0){
+        mat[i,j] <- 0
+      }
+      else{
+      
+      
+```{r}
+#distance
+
+#ieskoti grupiu, grafa, tarp tu paciu ligu
+# po mat -> grafikai
+#pasiruosimas
+#2 atstumas tarp ligu
+#su grafikais : tinka, ar study.id rodo panasuma su panasiais ar skirtingais
+# 1 study id kaip virsune (cg)
+check[check$Study.id == check$Study.id[1],]
+```
+
+#traitrs
+```{r, echo=FALSE}
+
+length(unique(data$Study.id[data$Sample.size > 100]))
+
+unique(check$Sample.size)
+#check$P.value <- p.adjust(check$P.value)
+as.data.frame(check[check$P.value < 1E-5,])
+
+p.adjust(check$P.value[1]) < p.adjust(check$P.value[2])
+check$P.value[1] < check$P.value[2]
+```
+
+```{r, echo = FALSE}
+data.frame(check)
+dim(TF_cg_study)
+dim(TF_cg_trait)
+``` 
 
 ```{r, echo=FALSE}
 
@@ -94,12 +236,13 @@ df <- checkValidation(check$Study.id, check$Probe.id)
 id_arr <- remove_duplicates(df, check$Study.id, check$Probe.id)
 rownames(check) <- c(1:nrow(check))
 check2<- check[-c(id_arr),]
-df2 <- checkValidation(check2$Study.id, check2$Probe.id)
+#df2 <- checkValidation(check2$Study.id, check2$Probe.id)
 dim(check)
 dim(check2)
 
 
 sum(df2$ch == FALSE)
+
 arr <- c()
 for(i in unique(check2$Study.id) ){
   arr <- c(arr,sum(check2$Study.id == i))
@@ -112,6 +255,11 @@ mean(arr)
 hist(arr[arr > 500])
 
 
+```
+
+```{r}
+data.frame(table(arr[arr > 500]))
+unique(arr)
 ```
 
 ```{r, echo = FALSE}
@@ -129,7 +277,7 @@ dim(check)
 arr <- c()
 
 for(i in unique(check2$Trait) ){
-  arr <- c(arr,sum(check$Trait == i))
+  arr <- c(arr,sum(check2$Trait == i))
   cat('\r', i)
 }
 
@@ -142,142 +290,12 @@ hist(arr[arr < mean(arr)])
 length(arr[arr > mean(arr)])
 length(arr[arr < mean(arr)])
 ```
-
-
-```{r, echo=FALSE}
-#check$Probe.id[check$Trait == unique(check$Trait[1])]
-if(!require("tidyr"))install.packages("tidyr")
-library("tidyr")
-
-makeMat <-function(rowNum, row ,col){
-  mat <- matrix(nrow = length(unique(row)), ncol = length(unique(col)),
-              dimnames = list(unique(row),  unique(col)))
-
-  for (i in 1:rowNum){
-    if(i %% 100 == 0){
-      cat('\r', i)
-      flush.console()
-    }
-    row1 <- row[i]
-    col1 <- col[i]
-    mat[row1,col1] <- TRUE
-  }
-  mat<- replace_na(mat, FALSE)
-  return(mat)
-}
-
-
-#mat[1:10,1:5]
-#sum(mat[,4])
-#dim(data)
-
-cg_trait <- makeMat(nrow(check), check$Probe.id, check$Trait)
-as.data.frame(cg_trait)
-#saveRDS(cg_trait, file= "TF_cg_trait.rds")
-```
-
-
-```{r, echo=FALSE}
-
-
-cg_study <- makeMat(nrow(check), check$Probe.id, check$Study.id)
-as.data.frame(cg_study)
-#saveRDS(cg_study, file= "TF_cg_study.rds")
-
-```
-
-
-```{r, echo=FALSE}
-#ir study ID
-#atstumus tarp visu poru study.id
-#kiek poziciju persidengia / kiek daugiausia gali persidengt (max persidengusio) 1 5, 1 3 
-#intersection ABC , CDE -> C 1
-#union ABC, CDE -> ABCDE -> 5  #probe.id
-#atstumas 1/5
-# CDF, CDF ->
-#intersection -> CDF 3
-#unuin -> CDF 3
-#kuo daugiau 
-
-#   BMI ...
-#BMI
-#.
-#.
-getDistance <- function(matrix, rownames,colnames){
-  mat <- matrix(nrow = length(rownames), ncol = length(colnames),
-              dimnames = list(rownames,colnames))
-  cat("create new matrix..",'\n')
-  c1 = 0
-  for(i in rownames){ #row
-    c1=c1+1
-    c2 = c1
-    for(j in colnames){ #every col
-      c2 = c2+1
-      mat[i,j] <- sum(matrix[,i] & matrix[,j])/sum(matrix[,i] | matrix[,j])
-      cat('\r', c1, ' ', c2)
-      flush.console() 
-      
-    }
-  }
-  return(mat)
-} 
-
-#sum(cg_study[,1] & cg_study[,2])/sum(cg_study[,1] | cg_study[,2])
-#sum(cg_trait[,1] & cg_trait[,2])/sum(cg_trait[,1] | cg_trait[,2])
-#kurie panasiausi
-names <- colnames(cg_trait[,c(1:3, 5:7, 192:200, 300)] )
-#length(names)
-
-# visų duomenų neleidžiu, nes užtruks ~ 4valandas , nebent vėliau
-# paduodu matricą, rownames( kuris bus pagrindinis tikrinamasis) ir colnames kuris bus kintamasis(tas antras tikrinamasis)
-trait_dist <- getDistance(cg_trait, names[2], names)
-data.frame(trait_dist)
-
-```
-
-if (sum(matrix[,i] & matrix[,j]) == 0 | sum(matrix[,i] | matrix[,j]) == "NaN"){
-        cat('===== check==', i, ' ', j, '\n')
-        cat(sum(matrix[,i] & matrix[,j]) , '  ', sum(matrix[,i] | matrix[,j]) , '\n') 
-        cat(sum(matrix[,i] & matrix[,j]) / sum(matrix[,i] | matrix[,j]) , '\n') 
-      }
-      if(sum(matrix[,i] & matrix[,j]) == 0 | sum(matrix[,i] | matrix[,j]) == 0){
-        mat[i,j] <- 0
-      }
-      else{
-      
-      
 ```{r}
-stud_dist <- getDistance(cg_study, colnames(cg_study)[4], colnames(cg_study) )
-data.frame(stud_dist)
-#distance
+data.frame(table(arr))
+unique(arr)
 
-#ieskoti grupiu, grafa, tarp tu paciu ligu
-# po mat -> grafikai
-#pasiruosimas
-#2 atstumas tarp ligu
-#su grafikais : tinka, ar study.id rodo panasuma su panasiais ar skirtingais
-# 1 study id kaip virsune (cg)
-
+#anno2
 ```
-
-#traitrs
-```{r, echo=FALSE}
-
-length(unique(data$Study.id[data$Sample.size > 100]))
-
-unique(check$Sample.size)
-#check$P.value <- p.adjust(check$P.value)
-as.data.frame(check[check$P.value < 1E-5,])
-
-p.adjust(check$P.value[1]) < p.adjust(check$P.value[2])
-check$P.value[1] < check$P.value[2]
-```
-
-```{r, echo = FALSE}
-data.frame(check)
-
-``` 
-
 
 
 

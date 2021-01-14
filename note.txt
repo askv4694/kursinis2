@@ -55,3 +55,12 @@ eiga:
 	name2 <- > 500 trait
 	5-ame naudoti name2
 
+--------------------------------------------------
+
+annotation (450k eiluciu)
+tf matrica
+
+kiekvienai ligai
+for (r in rownames){
+	for ( c in colnames)
+}

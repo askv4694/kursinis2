@@ -27,6 +27,12 @@ anno <- remove.factors(anno)
 
 #length(studies$Study.id)
 ```
+```{r}
+asc
+studies
+coh
+anno
+```
 
 1. pasilikti tik asc, kita info prideti su study.id. 
 2. studies : info: trait ir pmid
@@ -61,7 +67,7 @@ removeMoreThanOne <- function(data){
 
 
 cohorts<- coh[,c(2,4,5,11,15)]
-#coh
+cohorts
 #cohorts[935,]
 length(unique(cohorts$Study.id))
 c <- data.frame(removeMoreThanOne(cohorts))
@@ -74,6 +80,7 @@ cohorts <- c[!is.na(c$Platform),]
 ```{r, echo=FALSE}
 
 stud <- studies[,c(1,2,6)]
+stud
 main <- remove.factors(merge(stud, cohorts, by= "Study.id"))
 unique(main$Platform)
 main[main$Platform == "850K",]
