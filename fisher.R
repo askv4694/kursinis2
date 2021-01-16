@@ -28,8 +28,8 @@ col <- colnames(data)# [1:5]
 #pvals <- matrix(nrow = length(unique(col)), ncol = length(unique(col)),
 #                dimnames = list(unique(col),  unique(col)))
 
-odds <- readRDS("../Desktop/stud/7sem/kursinis2/unadjusted_odds_2.rds")
-pvals <- readRDS("../Desktop/stud/7sem/kursinis2/unadjusted_pvals_2.rds")
+odds <- readRDS("../Desktop/stud/7sem/kursinis2/unadjusted_odds_5.rds")
+pvals <- readRDS("../Desktop/stud/7sem/kursinis2/unadjusted_pvals_5.rds")
 
 
 #length(data[data[,1] == TRUE])
@@ -47,7 +47,7 @@ pvals <- readRDS("../Desktop/stud/7sem/kursinis2/unadjusted_pvals_2.rds")
 #fish$estimate
 
 Sys.time()
-n1 <- 368
+n1 <- 612
 n2 <- 232
 #per 6 valandas
 for(i in n1:length(col)){
@@ -71,9 +71,9 @@ Sys.time()
 #col1<- factor(col1, levels = c("TRUE", "FALSE"))
 #table(col1,factor(col2, levels = c("TRUE", "FALSE")))
 #odds
-saveRDS(odds, "../Desktop/stud/7sem/kursinis2/unadjusted_odds_3.rds")
+saveRDS(odds, "../Desktop/stud/7sem/kursinis2/unadjusted_odds_6.rds")
 #pvals
-saveRDS(pvals, "../Desktop/stud/7sem/kursinis2/unadjusted_pvals_3.rds")
+saveRDS(pvals, "../Desktop/stud/7sem/kursinis2/unadjusted_pvals_6.rds")
 pvals2 <- pvals
 pvals3 <- pvals
 
@@ -81,13 +81,13 @@ Sys.time()
 pvals2[] <- p.adjust(pvals, method = "fdr") < 0.05 & odds > 1 
 #pvals2
 Sys.time()
-saveRDS(pvals2, "../Desktop/stud/7sem/kursinis2/adjusted_pval_more_1_odds_3.rds")
+saveRDS(pvals2, "../Desktop/stud/7sem/kursinis2/adjusted_pval_more_1_odds_6.rds")
 Sys.time()
 
 pvals3[] <- p.adjust(pvals, method = "fdr") < 0.05 & odds < 1 
 #pvals3
 Sys.time()
-saveRDS(pvals3, "../Desktop/stud/7sem/kursinis2/adjusted_pval_less_1_odds_3.rds")
+saveRDS(pvals3, "../Desktop/stud/7sem/kursinis2/adjusted_pval_less_1_odds_6.rds")
 
 
 cat("finish", '\n')
